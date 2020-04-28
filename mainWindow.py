@@ -9,7 +9,8 @@ from multiplayerControlsGui import MultiplayerControlsGui
 from clientGui import ClientGui
 from serverGui import ServerGui
 from gameLogic import GameLogic
-from multiplayerGameLogic import MultiplayerGameLogic, GameServer, GameClient
+from multiplayerGameLogic import MultiplayerGameLogic
+from clientLogic import GameClient
 
 
 class MainWindow(QMainWindow):

@@ -8,7 +8,7 @@ from minefieldGui import MinefieldGui
 from multiplayerControlsGui import MultiplayerControlsGui
 from serverGui import ServerGui
 from gameLogic import GameLogic
-from multiplayerGameLogic import MultiplayerGameLogic, GameServer
+from serverLogic import GameServer
 
 class MainWindow(QMainWindow):
     def __init__(self, parent=None):
