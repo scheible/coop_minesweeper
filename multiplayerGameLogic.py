@@ -58,6 +58,7 @@ class MultiplayerGameLogic(GameLogic):
 
         self._markFields()
         self._nMines = nMines
+        self.minesLeftChanged.emit(nMines)
         self._resyncGui()
 
 

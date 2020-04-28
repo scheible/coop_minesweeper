@@ -80,7 +80,7 @@ class ClientGui(MultiplayerControlsGui):
         self.changeName.emit(self._cltCtrl.txtName.text())
 
     def _onJoin(self):
-        if (self._cltCtrl.btnJoin.text() == "Join"):
+        if self._cltCtrl.btnJoin.text() == "Join":
             try:
                 ip = self._cltCtrl.txt_serverIp.text()
                 port = int(self._cltCtrl.txt_serverPort.text())
@@ -92,23 +92,19 @@ class ClientGui(MultiplayerControlsGui):
         else:
             self.leave.emit()
 
-
     def _createLayout(self):
-        self._controlsLayout = QHBoxLayout()
-        self._intermediateLayout = QVBoxLayout()
+        self._headerLayout = QHBoxLayout()
 
         super(ClientGui, self)._createLayout()
 
         # remove all the old layout
-        for i in range(0, 3):
-            i = self._guiLayout.takeAt(0)
-            self._guiLayout.removeItem(i)
+        for i in range(0, 2):
+            i = self._mainLayout.takeAt(0)
+            self._mainLayout.removeItem(i)
 
         # reassemble new
-        self._guiLayout.addLayout(self._controlsLayout)
-        self._guiLayout.addLayout(self._layout)
-        self._controlsLayout.addLayout(self._intermediateLayout)
-        self._intermediateLayout.addWidget(self._turnLabel)
-        self._intermediateLayout.addWidget(self._tableView)
+        self._mainLayout.addLayout(self._headerLayout)
+        self._mainLayout.addLayout(self._layout)
+        self._headerLayout.addLayout(self._mpLayout)
         self._cltCtrl = ClientControlWidget(self)
-        self._controlsLayout.addWidget(self._cltCtrl)
+        self._headerLayout.addWidget(self._cltCtrl)

@@ -114,6 +114,7 @@ class GameLogic(QObject):
         self._markFields()
         self._gameOver = False
         self.gameStarted.emit(xSize, ySize)
+        self.minesLeftChanged.emit(nMines)
         self.unlockInput()
 
     def _initField(self, xSize, ySize):

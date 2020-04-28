@@ -1,4 +1,4 @@
-from PyQt5.QtWidgets import QWidget, QGridLayout, QPushButton, QSizePolicy
+from PyQt5.QtWidgets import QWidget, QGridLayout, QPushButton, QSizePolicy, QVBoxLayout, QLabel
 from PyQt5.QtCore import Qt, pyqtSignal
 from PyQt5.QtGui import QIcon
 
@@ -68,10 +68,19 @@ class MinefieldGui(QWidget):
         self._createLayout()
 
     def _createLayout(self):
-        self._layout = QGridLayout(self)
-        self._layout.setHorizontalSpacing(0)
-        self._layout.setVerticalSpacing(0)
+        self._layout = QVBoxLayout()
+        self._leftLabel = QLabel(self)
+        self._layout.addWidget(self._leftLabel)
+
+        self._innerFieldLayout = QGridLayout()
+        self._innerFieldLayout.setHorizontalSpacing(0)
+        self._innerFieldLayout.setVerticalSpacing(0)
+        self._layout.addLayout(self._innerFieldLayout)
+
         self.setLayout(self._layout)
+
+    def showMinesLeft(self, nMines):
+        self._leftLabel.setText("Mines Left: " + str(nMines))
 
     def uncover(self, x: int, y: int, state):
         mb = self.__getMineButton(x, y)
@@ -96,7 +105,7 @@ class MinefieldGui(QWidget):
                 mb.unflag()
 
     def __deleteAllMineButtons(self):
-        layout = self._layout
+        layout = self._innerFieldLayout
 
         if (layout != None):
             item = layout.takeAt(0)
@@ -115,10 +124,10 @@ class MinefieldGui(QWidget):
                 b.flagged.connect(self.__onMinebuttonFlag)
                 b.setSizePolicy(QSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding))
                 b.setMinimumSize(50, 50)
-                self._layout.addWidget(b, y, x) # the position is referred to as (row, column) -> (y, x)
+                self._innerFieldLayout.addWidget(b, y, x) # the position is referred to as (row, column) -> (y, x)
 
     def __getMineButton(self, x: int, y: int):
-        l: QGridLayout = self._layout
+        l: QGridLayout = self._innerFieldLayout
         b: MineButton = l.itemAtPosition(y, x).widget() # (y, x) corresponds to row and column
         return b
 

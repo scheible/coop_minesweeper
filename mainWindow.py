@@ -45,6 +45,7 @@ class MainWindow(QMainWindow):
         logic.disconnected.connect(gui.disconnect)
         logic.connected.connect(gui.connect)
         logic.connecting.connect(gui.connecting)
+        logic.minesLeftChanged.connect(gui.showMinesLeft)
 
         gui.join.connect(logic.connect)
         gui.leave.connect(logic.leave)

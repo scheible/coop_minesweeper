@@ -68,24 +68,22 @@ class ServerGui(MultiplayerControlsGui):
         super(ServerGui, self).__init__(parent)
 
     def _createLayout(self):
-        self._controlsLayout = QHBoxLayout()
-        self._intermediateLayout = QVBoxLayout()
+        self._headerLayout = QHBoxLayout()
 
         super(ServerGui, self)._createLayout()
 
         # remove all the old layout
-        for i in range(0, 3):
-            i = self._guiLayout.takeAt(0)
-            self._guiLayout.removeItem(i)
+        for i in range(0, 2):
+            i = self._mainLayout.takeAt(0)
+            self._mainLayout.removeItem(i)
 
         # reassemble new
-        self._guiLayout.addLayout(self._controlsLayout)
-        self._guiLayout.addLayout(self._layout)
-        self._controlsLayout.addLayout(self._intermediateLayout)
-        self._intermediateLayout.addWidget(self._turnLabel)
-        self._intermediateLayout.addWidget(self._tableView)
+        self._mainLayout.addLayout(self._headerLayout)
+        self._mainLayout.addLayout(self._layout)
+
+        self._headerLayout.addLayout(self._mpLayout)
         self._srvCtrl = ServerControlWidget(self)
-        self._controlsLayout.addWidget(self._srvCtrl)
+        self._headerLayout.addWidget(self._srvCtrl)
 
         self._srvCtrl.start.connect(self.start.emit)
         self._srvCtrl.kickPlayer.connect(self.kickPlayer.emit)

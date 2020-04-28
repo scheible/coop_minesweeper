@@ -1,4 +1,4 @@
-from PyQt5.QtWidgets import QWidget, QGridLayout, QVBoxLayout, QLabel, QTableView, QSizePolicy, QAbstractScrollArea, QAbstractItemView
+from PyQt5.QtWidgets import QGridLayout, QVBoxLayout, QLabel, QTableView, QSizePolicy, QAbstractItemView, QHBoxLayout
 from PyQt5.QtCore import QAbstractTableModel, QModelIndex, Qt, pyqtSignal, QObject
 from minefieldGui import MinefieldGui
 
@@ -108,38 +108,43 @@ class PlayerList(QAbstractTableModel):
 
 class MultiplayerControlsGui(MinefieldGui):
     def __init__(self, parent=None):
+        self._mainLayout = None
         super(MultiplayerControlsGui, self).__init__(parent)
 
     # Override the layout method to not make the grid layout
     # the central layout of the widget
     def _createLayout(self):
+        super(MultiplayerControlsGui, self)._createLayout()
+
         # This list holds all the current players
         self.__playerListModel = PlayerList(self)
 
-        self._guiLayout = QVBoxLayout()
-
+        self._mpLayout = QVBoxLayout()
         self._turnLabel = QLabel(self)
-        self._guiLayout.addWidget(self._turnLabel)
+        self._mpLayout.addWidget(self._turnLabel)
 
         self._tableView = QTableView()
         self._tableView.setMinimumSize(100, 100)
         self._tableView.verticalHeader().setVisible(False)
         self._tableView.setSizePolicy(QSizePolicy(QSizePolicy.MinimumExpanding, QSizePolicy.MinimumExpanding))
         self._tableView.horizontalHeader().setVisible(False)
-        self._guiLayout.addWidget(self._tableView)
         self._tableView.setModel(self.__playerListModel)
         self._tableView.setColumnWidth(1, 100)
         self._tableView.setColumnHidden(0, True)
         self._tableView.setStyleSheet("background-color: rgba(255, 255, 255, 0); border: None;")
         self._tableView.setShowGrid(False)
         self._tableView.setSelectionMode(QAbstractItemView.NoSelection)
+        self._mpLayout.addWidget(self._tableView)
 
-        self._layout = QGridLayout()
-        self._layout.setHorizontalSpacing(0)
-        self._layout.setVerticalSpacing(0)
-        self._guiLayout.addLayout(self._layout)
+        self._mainLayout = QVBoxLayout()
+        self._mainLayout.addLayout(self._mpLayout)
+        self._mainLayout.addLayout(self._layout)
 
-        self.setLayout(self._guiLayout)
+        self.setLayout(self._mainLayout)
+
+    def setLayout(self, layout):
+        if (self._mainLayout != None):
+            super(MultiplayerControlsGui, self).setLayout(self._mainLayout)
 
     def _clearPlayerList(self):
         self.__playerListModel.clear()
