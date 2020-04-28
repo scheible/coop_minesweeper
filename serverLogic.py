@@ -158,16 +158,13 @@ class GameServer(MultiplayerGameLogic):
     def nextPlayer(self):
         if len(self._players) > 0:
             if self._currentPlayer is None or not self._currentPlayer in self._players:
-                print("init turn to player 0")
                 if len(self._players) > 0:
                     self.setCurrentPlayer(self._players[0])
             else:
                 idx = self._players.index(self._currentPlayer)
                 newIdx = (idx+1) % len(self._players)
                 self.setCurrentPlayer(self._players[newIdx])
-                print("changing from player", idx, "to player", newIdx)
         else:
-            print("setting current player to none")
             self._currentPlayer = None
 
     def start(self, xSize: int, ySize: int, nMines: int):
