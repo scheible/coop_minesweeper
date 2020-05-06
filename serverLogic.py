@@ -1,4 +1,4 @@
-from PyQt5.QtCore import pyqtSignal, QObject, QByteArray
+from PyQt5.QtCore import pyqtSignal, QObject, QByteArray, QTimer
 from PyQt5.QtNetwork import QTcpServer, QHostAddress, QTcpSocket, QAbstractSocket
 from multiplayerGameLogic import MultiplayerGameLogic
 
@@ -144,6 +144,8 @@ class GameServer(MultiplayerGameLogic):
         self._players = []
         self._idCounter = 0
         self._currentPlayer = None
+        self._nextPlayerTimer = QTimer()
+        self._nextPlayerTimer.timeout.connect(self.nextPlayer)
 
     def listen(self):
         self.__server = QTcpServer()
@@ -154,6 +156,8 @@ class GameServer(MultiplayerGameLogic):
         self._currentPlayer = player
         if (not self._gameOver):
             self.playersTurn.emit(player.getID(), player.getPlayerName())
+            self._nextPlayerTimer.stop()
+            self._nextPlayerTimer.start(10000)
 
     def nextPlayer(self):
         if len(self._players) > 0:
