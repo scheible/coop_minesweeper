@@ -1,15 +1,5 @@
-from PyQt5.QtWidgets import QMainWindow, QPushButton, QWidget, QGridLayout, QSizePolicy, QVBoxLayout, QHBoxLayout, QLabel, QListWidgetItem
-from PyQt5.QtCore import Qt, pyqtSignal, QThread, QObject, QByteArray
-from PyQt5.QtGui import QIcon
-from PyQt5.QtNetwork import QTcpServer, QTcpSocket, QHostAddress, QAbstractSocket
-import random, time
-
-from minefieldGui import MinefieldGui
-from multiplayerControlsGui import MultiplayerControlsGui
+from PyQt5.QtWidgets import QMainWindow
 from clientGui import ClientGui
-from serverGui import ServerGui
-from gameLogic import GameLogic
-from multiplayerGameLogic import MultiplayerGameLogic
 from clientLogic import GameClient
 
 
@@ -17,7 +7,7 @@ class MainWindow(QMainWindow):
     def __init__(self, parent=None):
         super(MainWindow, self).__init__(parent)
 
-        self.setWindowTitle("Coop Minesweeper")
+        self.setWindowTitle("Death-Match Minesweeper")
         self.setGeometry(50, 50, 500, 500)
 
         gui = ClientGui(self)
@@ -47,6 +37,8 @@ class MainWindow(QMainWindow):
         logic.connected.connect(gui.connect)
         logic.connecting.connect(gui.connecting)
         logic.minesLeftChanged.connect(gui.showMinesLeft)
+        logic.playerScoreChanged.connect(gui.changePlayerScore)
+        logic.message.connect(gui.showMessage)
 
         gui.join.connect(logic.connect)
         gui.leave.connect(logic.leave)

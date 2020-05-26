@@ -1,5 +1,5 @@
 from PyQt5.QtCore import QObject, QTimer
-from serverLogic import GameServer
+from serverLogic import GameServer, DeathMatchServer, CoopServer
 
 
 class GameConfig:
@@ -27,7 +27,7 @@ class ServerCli(QObject):
 
         print("Server started")
 
-        server = GameServer(self)
+        server = DeathMatchServer(self)
         self.server = server
         self.configList = {}
         self.loadConfig("server.conf")
@@ -65,7 +65,8 @@ class ServerCli(QObject):
 
         global t
         t = QTimer()
-        t.expire.connect(self.restartGame)
+        t.setSingleShot(True)
+        t.timeout.connect(self.restartGame)
         t.start(waitTime * 1000)
 
     def restartGame(self):

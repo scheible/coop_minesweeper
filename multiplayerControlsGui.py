@@ -1,5 +1,6 @@
 from PyQt5.QtWidgets import QGridLayout, QVBoxLayout, QLabel, QTableView, QSizePolicy, QAbstractItemView, QHBoxLayout
 from PyQt5.QtCore import QAbstractTableModel, QModelIndex, Qt, pyqtSignal, QObject
+from PyQt5.QtMultimedia import QSound
 from minefieldGui import MinefieldGui
 
 
@@ -184,3 +185,8 @@ class MultiplayerControlsGui(MinefieldGui):
             self._turnLabel.setText("GAME OVER! YOU WIN!")
         else:
             self._turnLabel.setText("GAME OVER! YOU LOSE!")
+            s = QSound("assets/lose.wav")
+            s.play()
+
+    def showMessage(self, msg):
+        self._turnLabel.setText(msg)
