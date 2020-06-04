@@ -1,4 +1,4 @@
-from PyQt5.QtWidgets import QWidget, QGridLayout, QPushButton, QSizePolicy, QVBoxLayout, QLabel
+from PyQt5.QtWidgets import QWidget, QGridLayout, QStackedLayout, QPushButton, QSizePolicy, QVBoxLayout, QLabel
 from PyQt5.QtCore import Qt, pyqtSignal
 from PyQt5.QtGui import QIcon
 

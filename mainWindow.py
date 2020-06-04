@@ -1,6 +1,7 @@
 from PyQt5.QtWidgets import QMainWindow
 from clientGui import ClientGui
 from clientLogic import GameClient
+from minefieldGui import MinefieldGui
 
 
 class MainWindow(QMainWindow):
@@ -10,40 +11,14 @@ class MainWindow(QMainWindow):
         self.setWindowTitle("Death-Match Minesweeper")
         self.setGeometry(50, 50, 500, 500)
 
-        gui = ClientGui(self)
+        gui = MinefieldGui(self)
         logic = GameClient(self)
         self.m = gui
         self.setCentralWidget(gui)
 
         logic.gameStarted.connect(gui.reset)
 
-        gui.uncovered.connect(logic.uncover)
-        gui.flagged.connect(logic.flag)
-        logic.uncovered.connect(gui.uncover)
-
-        gui.flagged.connect(logic.flag)
-        logic.flagged.connect(gui.flag)
-        logic.gameOver.connect(gui.showGameOver)
-
-        logic.unlockInput()
-
-        self.logic = logic
-        logic.playerConnected.connect(gui.addPlayer)
-        logic.playerNameChanged.connect(gui.changePlayerName)
-        logic.playerLeft.connect(gui.removePlayer)
-        logic.playersTurn.connect(gui.playersTurn)
-        logic.yourTurn.connect(gui.yourTurn)
-        logic.disconnected.connect(gui.disconnect)
-        logic.connected.connect(gui.connect)
-        logic.connecting.connect(gui.connecting)
-        logic.minesLeftChanged.connect(gui.showMinesLeft)
-        logic.playerScoreChanged.connect(gui.changePlayerScore)
-        logic.message.connect(gui.showMessage)
-
-        gui.join.connect(logic.connect)
-        gui.leave.connect(logic.leave)
-        gui.changeName.connect(logic.changeName)
-
+        logic.start(10, 10, 20)
 
 
     def restart(self):
