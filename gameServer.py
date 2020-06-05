@@ -4,6 +4,7 @@ from PyQt5.QtGui import QIcon
 from PyQt5.QtNetwork import QTcpServer, QTcpSocket, QHostAddress, QAbstractSocket
 import random, time
 
+
 class PlayerList(QAbstractTableModel):
     def __init__(self, parent=None):
         super(PlayerList, self).__init__(parent)
@@ -45,6 +46,7 @@ class PlayerList(QAbstractTableModel):
             elif (orientation == 2):
                 return str(section + 1)
 
+
 class PlayerConnection(QObject):
     nameChanged = pyqtSignal(str)
     disconnected = pyqtSignal()
@@ -83,6 +85,7 @@ class PlayerConnection(QObject):
         s = str(data)[2:-1]
         self.__playerName = s.strip()
         self.nameChanged.emit(self.__playerName)
+
 
 class GameServer(QObject):
     changed = pyqtSignal()

@@ -96,6 +96,7 @@ class ClientGui(QWidget):
         self._mulitplayerControls.clearPlayerList()
         self._mineField.reset(0, 0)
         self.showMinesLeft(0)
+        self._mineField.showMessage("")
 
     def connect(self):
         self._cltCtrl.btnJoin.setEnabled(True)
