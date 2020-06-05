@@ -1,36 +1,39 @@
 from PyQt5.QtWidgets import QMainWindow
 from clientGui import ClientGui
 from clientLogic import GameClient
-from minefieldGui import MinefieldGui
+from clientGui import ClientGui
 
 
 class MainWindow(QMainWindow):
     def __init__(self, parent=None):
         super(MainWindow, self).__init__(parent)
 
-        self.setWindowTitle("Death-Match Minesweeper")
+        self.setWindowTitle("Coop Minesweeper")
         self.setGeometry(50, 50, 500, 500)
 
-        gui = MinefieldGui(self)
-        logic = GameClient(self)
-        self.m = gui
-        self.setCentralWidget(gui)
+        self.gui = ClientGui(self)
+        self.logic = GameClient(self)
 
-        logic.gameStarted.connect(gui.reset)
+        self.setCentralWidget(self.gui)
 
-        logic.start(10, 10, 20)
+        self.gui.join.connect(self.logic.connect)
+        self.gui.leave.connect(self.logic.leave)
+        self.gui.changeName.connect(self.logic.changeName)
+        self.gui.uncovered.connect(self.logic.uncover)
+        self.gui.flagged.connect(self.logic.flag)
 
+        self.logic.yourTurn.connect(self.gui.yourTurn)
+        self.logic.disconnected.connect(self.gui.disconnect)
+        self.logic.connected.connect(self.gui.connect)
+        self.logic.playerConnected.connect(self.gui.addPlayer)
+        self.logic.playerNameChanged.connect(self.gui.changePlayerName)
+        self.logic.playersTurn.connect(self.gui.playersTurn)
+        self.logic.playerScoreChanged.connect(self.gui.changePlayerScore)
+        self.logic.playerLeft.connect(self.gui.removePlayer)
+        self.logic.message.connect(self.gui.showMessage)
 
-    def restart(self):
-        self.logic.start(10, 8, 8)
-        self.logic.unlockInput()
-
-    def gameOver(self, won):
-        print("Game over", won)
-        self.logic.lockInput()
-
-    def nameChanged(self, id, name):
-        print("name changed", id, name)
-
-    def playerConnected(self, id, ip):
-        print("player connected", id, ip)
+        self.logic.uncovered.connect(self.gui.uncover)
+        self.logic.flagged.connect(self.gui.flag)
+        self.logic.gameStarted.connect(self.gui.reset)
+        self.logic.gameOver.connect(self.gui.showGameover)
+        self.logic.minesLeftChanged.connect(self.gui.showMinesLeft)

@@ -1,4 +1,4 @@
-from PyQt5.QtWidgets import QGridLayout, QVBoxLayout, QLabel, QTableView, QSizePolicy, QAbstractItemView, QHBoxLayout
+from PyQt5.QtWidgets import QGridLayout, QVBoxLayout, QLabel, QTableView, QSizePolicy, QAbstractItemView, QHBoxLayout, QWidget
 from PyQt5.QtCore import QAbstractTableModel, QModelIndex, Qt, pyqtSignal, QObject
 from PyQt5.QtMultimedia import QSound
 from minefieldGui import MinefieldGui
@@ -107,19 +107,15 @@ class PlayerList(QAbstractTableModel):
                 return str(section + 1)
 
 
-class MultiplayerControlsGui(MinefieldGui):
+class MultiplayerControlsGui(QWidget):
     def __init__(self, parent=None):
-        self._mainLayout = None
         super(MultiplayerControlsGui, self).__init__(parent)
+        self.__playerListModel = PlayerList(self)
+        self._createLayout()
 
     # Override the layout method to not make the grid layout
     # the central layout of the widget
     def _createLayout(self):
-        super(MultiplayerControlsGui, self)._createLayout()
-
-        # This list holds all the current players
-        self.__playerListModel = PlayerList(self)
-
         self._mpLayout = QVBoxLayout()
         self._turnLabel = QLabel(self)
         self._mpLayout.addWidget(self._turnLabel)
@@ -137,17 +133,9 @@ class MultiplayerControlsGui(MinefieldGui):
         self._tableView.setSelectionMode(QAbstractItemView.NoSelection)
         self._mpLayout.addWidget(self._tableView)
 
-        self._mainLayout = QVBoxLayout()
-        self._mainLayout.addLayout(self._mpLayout)
-        self._mainLayout.addLayout(self._layout)
+        self.setLayout(self._mpLayout)
 
-        self.setLayout(self._mainLayout)
-
-    def setLayout(self, layout):
-        if (self._mainLayout != None):
-            super(MultiplayerControlsGui, self).setLayout(self._mainLayout)
-
-    def _clearPlayerList(self):
+    def clearPlayerList(self):
         self.__playerListModel.clear()
         self._turnLabel.clear()
 
@@ -159,7 +147,7 @@ class MultiplayerControlsGui(MinefieldGui):
 
     def removePlayer(self, id: int):
         p = self.__playerListModel.getPlayerById(id)
-        if (p != None):
+        if p is not None:
             self.__playerListModel.removePlayer(p)
 
     def changePlayerName(self, id: int, name: str):

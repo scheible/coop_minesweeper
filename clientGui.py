@@ -1,6 +1,7 @@
 from PyQt5.QtWidgets import QHBoxLayout, QVBoxLayout, QLineEdit, QPushButton, QWidget
 from PyQt5.QtCore import pyqtSignal
 from multiplayerControlsGui import MultiplayerControlsGui
+from minefieldGui import MinefieldGui
 
 class ClientControlWidget(QWidget):
     connect = pyqtSignal()
@@ -45,15 +46,40 @@ class ClientControlWidget(QWidget):
         self.btnChgName.clicked.connect(self.changeName.emit)
 
 
-class ClientGui(MultiplayerControlsGui):
+class ClientGui(QWidget):
     join = pyqtSignal(str, int, str)
     leave = pyqtSignal()
     changeName = pyqtSignal(str)
 
+    uncovered = pyqtSignal(int, int)
+    flagged = pyqtSignal(int, int)
+
+
     def __init__(self, parent=None):
         super(ClientGui, self).__init__(parent)
+
+        self._cltCtrl = ClientControlWidget(self)
+        self._mineField = MinefieldGui(self)
+        self._mulitplayerControls = MultiplayerControlsGui(self)
+
+        self._mineField.uncovered.connect(self.uncovered.emit)
+        self._mineField.flagged.connect(self.flagged.emit)
+
         self._cltCtrl.changeName.connect(self._onChangeName)
         self._cltCtrl.connect.connect(self._onJoin)
+
+        self._createLayout()
+
+    def _createLayout(self):
+        self._headerLayout = QHBoxLayout()
+
+        self._headerLayout.addWidget(self._mulitplayerControls)
+        self._headerLayout.addWidget(self._cltCtrl)
+        self._mainLayout = QVBoxLayout()
+        self._mainLayout.addLayout(self._headerLayout)
+        self._mainLayout.addWidget(self._mineField)
+
+        self.setLayout(self._mainLayout)
 
     def connecting(self):
         self._cltCtrl.btnChgName.setEnabled(False)
@@ -67,7 +93,9 @@ class ClientGui(MultiplayerControlsGui):
         self._cltCtrl.btnJoin.setText("Join")
         self._cltCtrl.txt_serverIp.setEnabled(True)
         self._cltCtrl.txt_serverPort.setEnabled(True)
-        self._clearPlayerList()
+        self._mulitplayerControls.clearPlayerList()
+        self._mineField.reset(0, 0)
+        self.showMinesLeft(0)
 
     def connect(self):
         self._cltCtrl.btnJoin.setEnabled(True)
@@ -92,19 +120,38 @@ class ClientGui(MultiplayerControlsGui):
         else:
             self.leave.emit()
 
-    def _createLayout(self):
-        self._headerLayout = QHBoxLayout()
+    def addPlayer(self, id: int, ip: str):
+        self._mulitplayerControls.addPlayer(id, ip)
 
-        super(ClientGui, self)._createLayout()
+    def removePlayer(self, id: int):
+        self._mulitplayerControls.removePlayer(id)
 
-        # remove all the old layout
-        for i in range(0, 2):
-            i = self._mainLayout.takeAt(0)
-            self._mainLayout.removeItem(i)
+    def changePlayerName(self, id: int, name: str):
+        self._mulitplayerControls.changePlayerName(id, name)
 
-        # reassemble new
-        self._mainLayout.addLayout(self._headerLayout)
-        self._mainLayout.addLayout(self._layout)
-        self._headerLayout.addLayout(self._mpLayout)
-        self._cltCtrl = ClientControlWidget(self)
-        self._headerLayout.addWidget(self._cltCtrl)
+    def changePlayerScore(self, id: int, score: int):
+        self._mulitplayerControls.changePlayerScore(id, score)
+
+    def playersTurn(self, id: int, name: str):
+        self._mulitplayerControls.playersTurn(id, name)
+
+    def yourTurn(self):
+        self._mulitplayerControls.yourTurn()
+
+    def uncover(self, x: int, y: int, state: int):
+        self._mineField.uncover(x, y, state)
+
+    def flag(self, x: int, y: int, flagged: bool):
+        self._mineField.flag(x, y, flagged)
+
+    def reset(self, xSize: int, ySize: int):
+        self._mineField.reset(xSize, ySize)
+
+    def showMinesLeft(self, nLeft: int):
+        self._mineField.showMinesLeft(nLeft)
+
+    def showGameover(self, win: bool):
+        self._mulitplayerControls.showGameOver(win)
+
+    def showMessage(self, msg: str):
+        self._mulitplayerControls.showMessage(msg)
