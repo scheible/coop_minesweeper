@@ -170,7 +170,7 @@ class GameLogic(QObject):
 
     def uncover(self, x: int, y: int, auto: bool = False):
         if self._inputLocked:
-            return
+            return -1
 
         field = self._fields[x][y]
         state = field.uncover()
@@ -188,6 +188,7 @@ class GameLogic(QObject):
                 self.gameOver.emit(True)
 
             self.uncovered.emit(x, y, state, auto)
+        return state
 
     def _uncoverNext(self, field):
         next = self._getNeighbourFields(field)

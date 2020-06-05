@@ -10,6 +10,7 @@ class MultiplayerGameLogic(GameLogic):
     playersTurn = pyqtSignal(int, str)
     playerScoreChanged = pyqtSignal(int, int)
     playerLeft = pyqtSignal(int)
+    message = pyqtSignal(str)
 
     def __init__(self, parent=None):
         super(MultiplayerGameLogic, self).__init__(parent)

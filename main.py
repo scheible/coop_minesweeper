@@ -11,6 +11,5 @@ app = QApplication(sys.argv)
 m = MainWindow()
 m.show()
 
-
 app.exec_()
 

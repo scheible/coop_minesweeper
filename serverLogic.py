@@ -1,4 +1,4 @@
-from PyQt5.QtCore import pyqtSignal, QObject, QByteArray
+from PyQt5.QtCore import pyqtSignal, QObject, QByteArray, QTimer
 from PyQt5.QtNetwork import QTcpServer, QHostAddress, QTcpSocket, QAbstractSocket
 from multiplayerGameLogic import MultiplayerGameLogic
 
@@ -8,6 +8,7 @@ class PlayerConnection(QObject):
     disconnected = pyqtSignal()
     uncovered = pyqtSignal(int, int)
     flagged = pyqtSignal(int, int)
+    scoreChanged = pyqtSignal(int, int)
 
     def __init__(self, socket: QTcpSocket, id, parent=None):
         super(PlayerConnection, self).__init__(parent)
@@ -18,11 +19,32 @@ class PlayerConnection(QObject):
         self.__id = id
         self.__score = 0
 
+    def addScore(self, n):
+        self.__score += n
+        self.scoreChanged.emit(self.__id, self.__score)
+
+    def setScore(self, n):
+        self.__score = n
+        self.scoreChanged.emit(self.__id, self.__score)
+
+    def getScore(self):
+        return self.__score
+
+    def sendMessage(self, msg):
+        data = bytearray()
+        data += b'MSG'
+        data.append(len(msg))
+        data += bytearray(msg, 'utf-8')
+        self.__socket.write(data)
+
     def sendMap(self, mapData):
         data = bytearray()
         data += b'MAP'
         data += mapData
         self.__socket.write(data)
+
+    def sendYourTurn(self):
+        self.sendTurn(self.__id, self.__playerName)
 
     def sendTurn(self, id: int, name: str):
         if (id != None):
@@ -60,6 +82,7 @@ class PlayerConnection(QObject):
 
         for p in playerList:
             data.append(p.getID())
+            data.append(p.getScore())
             data.append(len(p.getPlayerName()))
             data += bytearray(p.getPlayerName(), "utf-8")
 
@@ -81,6 +104,13 @@ class PlayerConnection(QObject):
         data.append(0)
         data.append(x)
         data.append(y)
+        self.__socket.write(data)
+
+    def sendScore(self, id: int, score: int):
+        data = bytearray()
+        data += b'SCR'
+        data.append(id)
+        data.append(score)
         self.__socket.write(data)
 
     def getPlayerName(self):
@@ -143,17 +173,82 @@ class GameServer(MultiplayerGameLogic):
         super(GameServer, self).__init__(parent)
         self._players = []
         self._idCounter = 0
-        self._currentPlayer = None
 
     def listen(self):
         self.__server = QTcpServer()
         self.__server.listen(QHostAddress.AnyIPv4, 4444)
         self.__server.newConnection.connect(self.onNewConnection)
 
+    def onNewConnection(self):
+        socket = self.__server.nextPendingConnection()
+        player = PlayerConnection(socket, self._idCounter)
+        self._idCounter += 1
+
+        player.disconnected.connect(self._onPlayerDisconnect)
+        player.nameChanged.connect(self._onPlayerNameChanged)
+        player.uncovered.connect(self._onPlayerUncover)
+        player.flagged.connect(self._onPlayerFlagged)
+        player.scoreChanged.connect(self._onPlayerScoreChanged)
+
+        player.sendMap(self._encodeMineField())
+        player.sendPlayerList(self._players)
+        self._players.append(player)
+
+        self.playerConnected.connect(player.sendPlayerJoined)
+        self.playerLeft.connect(player.sendLeft)
+        self.playerNameChanged.connect(player.sendNameChanged)
+        self.playersTurn.connect(player.sendTurn)
+        self.flagged.connect(player.sendFlag)
+        self.uncovered.connect(player.sendUncover)
+        self.mapChanged.connect(player.sendMap)
+        self.playerScoreChanged.connect(player.sendScore)
+        self.message.connect(player.sendMessage)
+
+        self.playerConnected.emit(player.getID(), player.getIP())
+
+        return player
+
+    def _onPlayerFlagged(self, x, y):
+        pass
+
+    def _onPlayerScoreChanged(self, score):
+        player = self.sender()
+        self.playerScoreChanged.emit(player.getID(), player.getScore())
+
+    def _onPlayerUncover(self, x, y):
+        pass
+
+    def _onPlayerDisconnect(self):
+        player = self.sender()
+        self._players.remove(player)
+        self.playerLeft.emit(player.getID())
+
+    def _onPlayerNameChanged(self, name):
+        player = self.sender()
+        self.playerNameChanged.emit(player.getID(), name)
+
+
+class CoopServer(GameServer):
+
+    def __init__(self, parent=None):
+        super(CoopServer, self).__init__(parent)
+        self._currentPlayer = None
+        self._nextPlayerTimer = QTimer()
+        self._nextPlayerTimer.timeout.connect(self.nextPlayer)
+
+    def onNewConnection(self):
+        player = super(CoopServer, self).onNewConnection()
+        if (self._currentPlayer == None):
+            self.setCurrentPlayer(player)
+        else:
+            player.sendTurn(self._currentPlayer.getID(), "")
+
     def setCurrentPlayer(self, player):
         self._currentPlayer = player
         if (not self._gameOver):
             self.playersTurn.emit(player.getID(), player.getPlayerName())
+            self._nextPlayerTimer.stop()
+            self._nextPlayerTimer.start(10000)
 
     def nextPlayer(self):
         if len(self._players) > 0:
@@ -172,35 +267,6 @@ class GameServer(MultiplayerGameLogic):
         self.mapChanged.emit(self._encodeMineField())
         self.nextPlayer()
         self._gameOver = False
-
-    def onNewConnection(self):
-        socket = self.__server.nextPendingConnection()
-        player = PlayerConnection(socket, self._idCounter)
-        self._idCounter += 1
-
-        player.disconnected.connect(self._onPlayerDisconnect)
-        player.nameChanged.connect(self._onPlayerNameChanged)
-        player.uncovered.connect(self._onPlayerUncover)
-        player.flagged.connect(self._onPlayerFlagged)
-
-        player.sendMap(self._encodeMineField())
-        player.sendPlayerList(self._players)
-        self._players.append(player)
-
-        self.playerConnected.connect(player.sendPlayerJoined)
-        self.playerLeft.connect(player.sendLeft)
-        self.playerNameChanged.connect(player.sendNameChanged)
-        self.playersTurn.connect(player.sendTurn)
-        self.flagged.connect(player.sendFlag)
-        self.uncovered.connect(player.sendUncover)
-        self.mapChanged.connect(player.sendMap)
-
-        self.playerConnected.emit(player.getID(), player.getIP())
-
-        if (self._currentPlayer == None):
-            self.setCurrentPlayer(player)
-        else:
-            player.sendTurn(self._currentPlayer.getID(), "")
 
     def _onPlayerFlagged(self, x, y):
         player = self.sender()
@@ -230,3 +296,46 @@ class GameServer(MultiplayerGameLogic):
             self.setCurrentPlayer(player)
 
 
+class DeathMatchServer(GameServer):
+
+    def __init__(self, parent=None):
+        super(DeathMatchServer, self).__init__(parent)
+        self._gameOver = True
+        self._startCounter = 0
+        self._countDown = QTimer()
+        self._countDown.timeout.connect(self.gameTicker)
+
+    def gameTicker(self):
+        self._startCounter -= 1
+        self.message.emit("Start in " + str(self._startCounter))
+
+        if (self._startCounter == 0):
+            self._countDown.stop()
+            self.unlockInput()
+            self.message.emit("DEATHMATCH!!")
+
+    def start(self, xSize: int, ySize: int, nMines: int):
+        super(GameServer, self).start(xSize, ySize, nMines)
+        self.mapChanged.emit(self._encodeMineField())
+        self._gameOver = False
+
+        for p in self._players:
+            p.setScore(0)
+            p.sendYourTurn()
+
+        self.lockInput()
+        self._startCounter = 5
+        self._countDown.start(1000)
+
+    def _onPlayerUncover(self, x, y):
+        success = self.uncover(x, y)
+        print("success", success)
+        player = self.sender()
+        if success >= 0:
+            if success < 9:
+                player.addScore(1)
+            else:
+                player.setScore(0)
+
+    def _onPlayerFlagged(self, x, y):
+        self.flag(x, y)

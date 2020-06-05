@@ -1,21 +1,8 @@
-from PyQt5.QtCore import QObject, QThread, pyqtSignal
-from serverLogic import GameServer
-import time
+from PyQt5.QtCore import QObject, QTimer
+from serverLogic import GameServer, DeathMatchServer, CoopServer
 
 
-class Timer(QThread):
-    expire = pyqtSignal()
-
-    def __init__(self, seconds,  parent=None):
-        super(Timer, self).__init__(parent)
-        self._seconds = seconds
-
-    def run(self):
-        time.sleep(self._seconds)
-        self.expire.emit()
-
-
-class GameConfig():
+class GameConfig:
     def __init__(self, l=""):
         self.loadFromString(l)
 
@@ -40,7 +27,7 @@ class ServerCli(QObject):
 
         print("Server started")
 
-        server = GameServer(self)
+        server = DeathMatchServer(self)
         self.server = server
         self.configList = {}
         self.loadConfig("server.conf")
@@ -77,9 +64,10 @@ class ServerCli(QObject):
             self.currentConfig = self.configList[self.currentConfig.nextLose]
 
         global t
-        t = Timer(waitTime)
-        t.expire.connect(self.restartGame)
-        t.start()
+        t = QTimer()
+        t.setSingleShot(True)
+        t.timeout.connect(self.restartGame)
+        t.start(waitTime * 1000)
 
     def restartGame(self):
         self.server.start(self.currentConfig.x, self.currentConfig.y, self.currentConfig.nMines)

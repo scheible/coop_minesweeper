@@ -78,7 +78,6 @@ class GameClient(MultiplayerGameLogic):
         return total+2
 
     def rcvPLS(self, data):
-        print("received player list")
         offset = 0
 
         while (len(data) >= 3):
@@ -86,21 +85,21 @@ class GameClient(MultiplayerGameLogic):
                 offset += 3
                 break
             id = int.from_bytes(data[0], "big")
-            l = int.from_bytes(data[1], "big")
-            name = bytearray(data[2:l+2])
-            data = data[l+2:]
-            offset += 2+l
+            score = int.from_bytes(data[1], "big")
+            l = int.from_bytes(data[2], "big")
+            name = bytearray(data[3:l+3])
+            data = data[l+3:]
+            offset += 3+l
             self.playerConnected.emit(id, name.decode('utf-8'))
             self.playerNameChanged.emit(id, name.decode('utf-8'))
+            self.playerScoreChanged.emit(id, score)
         return offset
 
     def rcvJON(self, data):
-        print("received join", data)
         self.playerConnected.emit(int.from_bytes(data[0], "big"), "new player")
         return 1
 
     def rcvYTN(self, data):
-        print("YOUr TURN")
         self.yourTurn.emit()
         return 0
 
@@ -110,7 +109,6 @@ class GameClient(MultiplayerGameLogic):
         return 1
 
     def rcvHEL(self, data):
-        print("received HEL")
         id = int.from_bytes(data[0], "big")
         l = int.from_bytes(data[1], "big")
         name = bytearray(data[2:l+2])
@@ -135,6 +133,18 @@ class GameClient(MultiplayerGameLogic):
         y = int.from_bytes(data[2], 'big')
         super(GameClient, self).uncover(x, y)
         return 3
+
+    def rcvSCR(self, data):
+        id = int.from_bytes(data[0], 'big')
+        score = int.from_bytes(data[1], 'big')
+        self.playerScoreChanged.emit(id, score)
+        return 2
+
+    def rcvMSG(self, data):
+        l = int.from_bytes(data[0], 'big')
+        msg = bytearray(data[1:l+1])
+        self.message.emit(msg.decode('utf-8'))
+        return l+1
 
     def _parsePacket(self, data):
         while (len(data) >= 3):
@@ -173,4 +183,12 @@ class GameClient(MultiplayerGameLogic):
 
             elif (header == b'UCV'):
                 offset = self.rcvUCV(data)
+                data = data[offset:]
+
+            elif (header == b'SCR'):
+                offset = self.rcvSCR(data)
+                data = data[offset:]
+
+            elif (header == b'MSG'):
+                offset = self.rcvMSG(data)
                 data = data[offset:]

@@ -11,4 +11,5 @@ from mainWindow import MainWindow
 app = QApplication(sys.argv)
 server = ServerCli()
 
+
 app.exec_()
