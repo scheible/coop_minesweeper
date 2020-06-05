@@ -1,5 +1,4 @@
 from PyQt5.QtWidgets import QMainWindow
-from clientGui import ClientGui
 from clientLogic import GameClient
 from clientGui import ClientGui
 
@@ -30,8 +29,8 @@ class MainWindow(QMainWindow):
         self.logic.playersTurn.connect(self.gui.playersTurn)
         self.logic.playerScoreChanged.connect(self.gui.changePlayerScore)
         self.logic.playerLeft.connect(self.gui.removePlayer)
-        self.logic.message.connect(self.gui.showMessage)
 
+        self.logic.message.connect(self.gui.showMessage)
         self.logic.uncovered.connect(self.gui.uncover)
         self.logic.flagged.connect(self.gui.flag)
         self.logic.gameStarted.connect(self.gui.reset)

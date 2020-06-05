@@ -154,4 +154,4 @@ class ClientGui(QWidget):
         self._mulitplayerControls.showGameOver(win)
 
     def showMessage(self, msg: str):
-        self._mulitplayerControls.showMessage(msg)
+        self._mineField.showMessage(msg)
