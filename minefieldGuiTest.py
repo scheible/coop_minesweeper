@@ -3,13 +3,22 @@ import unittest
 from PyQt5.QtGui import QGuiApplication
 from PyQt5.QtTest import QTest, QSignalSpy
 from PyQt5.QtCore import Qt
-from minefieldGui import MineButton
+from minefieldGui import MineButton, MinefieldGui
 from PyQt5.QtWidgets import QApplication
 
 class TestMinefieldGui(unittest.TestCase):
 
     def setUp(self):
         self.app = QApplication(sys.argv)
+
+    def test_minefield(self):
+        m = MinefieldGui()
+        m.reset(10, 10)
+        m.show()
+        m.showMessage("Hallo Welt")
+
+
+        self.app.exec_()
 
     def test_mineButton(self):
         button = MineButton(0, 0)

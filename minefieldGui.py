@@ -77,7 +77,17 @@ class MinefieldGui(QWidget):
         self._innerFieldLayout.setVerticalSpacing(0)
         self._layout.addLayout(self._innerFieldLayout)
 
-        self.setLayout(self._layout)
+        self._pseudoWidget = QWidget(self)
+        self._pseudoWidget.setLayout(self._layout)
+
+        self._generalLbl = QLabel(self)
+        self._generalLbl.setText("TEST")
+        self._generalLbl.setAlignment(Qt.AlignCenter)
+        self._stack = QStackedLayout(self)
+        self._stack.addWidget(self._pseudoWidget)
+        self._stack.addWidget(self._generalLbl)
+
+        self.setLayout(self._stack)
 
     def showMinesLeft(self, nMines):
         self._leftLabel.setText("Mines Left: " + str(nMines))
@@ -136,3 +146,10 @@ class MinefieldGui(QWidget):
 
     def __onMinebuttonFlag(self):
         self.flagged.emit(self.sender().x, self.sender().y)
+
+    def showMessage(self, msg: str):
+        if (msg == ""):
+            self._stack.setCurrentIndex(0)
+        else:
+            self._generalLbl.setText(msg)
+            self._stack.setCurrentIndex(1)

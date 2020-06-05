@@ -307,12 +307,15 @@ class DeathMatchServer(GameServer):
 
     def gameTicker(self):
         self._startCounter -= 1
-        self.message.emit("Start in " + str(self._startCounter))
+        self.message.emit("Start in " + str(self._startCounter-1))
+
+        if (self._startCounter == 1):
+            self.message.emit("START!!")
 
         if (self._startCounter == 0):
             self._countDown.stop()
             self.unlockInput()
-            self.message.emit("DEATHMATCH!!")
+            self.message.emit("")
 
     def start(self, xSize: int, ySize: int, nMines: int):
         super(GameServer, self).start(xSize, ySize, nMines)
@@ -324,7 +327,8 @@ class DeathMatchServer(GameServer):
             p.sendYourTurn()
 
         self.lockInput()
-        self._startCounter = 5
+        self._startCounter = 7
+        self.message.emit("Start in " + str(self._startCounter-1))
         self._countDown.start(1000)
 
     def _onPlayerUncover(self, x, y):
